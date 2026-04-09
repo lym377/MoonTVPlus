@@ -12,10 +12,11 @@ import React, {
 
 import type { DanmakuComment,DanmakuSelection } from '@/lib/danmaku/types';
 import { EpisodeFilterConfig,SearchResult } from '@/lib/types';
-import { getVideoResolutionFromM3u8, processImageUrl } from '@/lib/utils';
+import { getVideoResolutionFromM3u8 } from '@/lib/utils';
 
 import DanmakuPanel from '@/components/DanmakuPanel';
 import EpisodeFilterSettings from '@/components/EpisodeFilterSettings';
+import ProxyImage from '@/components/ProxyImage';
 
 // 定义视频信息类型
 interface VideoInfo {
@@ -870,10 +871,11 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                           {source.source === 'directplay' ? (
                             <LinkIcon className='w-6 h-6 text-blue-500' />
                           ) : source.poster ? (
-                            <img
-                              src={processImageUrl(source.poster)}
+                            <ProxyImage
+                              originalSrc={source.poster}
                               alt={source.title}
                               className='w-full h-full object-cover'
+                              retryOnError={false}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = 'none';

@@ -64,6 +64,7 @@ import Drawer from '@/components/Drawer';
 import EpisodeSelector from '@/components/EpisodeSelector';
 import PageLayout from '@/components/PageLayout';
 import PansouSearch from '@/components/PansouSearch';
+import ProxyImage from '@/components/ProxyImage';
 import { useSite } from '@/components/SiteProvider';
 import SmartRecommendations from '@/components/SmartRecommendations';
 import Toast, { ToastProps } from '@/components/Toast';
@@ -9023,8 +9024,8 @@ function PlayPageClient() {
                   <div className='relative bg-gray-300 dark:bg-gray-700 aspect-[2/3] flex items-center justify-center rounded-xl overflow-hidden'>
                     {videoCover ? (
                       <>
-                        <img
-                          src={processImageUrl(videoCover)}
+                        <ProxyImage
+                          originalSrc={videoCover}
                           alt={videoTitle}
                           className='w-full h-full object-cover'
                         />

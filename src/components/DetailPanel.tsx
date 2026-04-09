@@ -9,6 +9,7 @@ import { getTMDBImageUrl } from '@/lib/tmdb.client';
 import { processImageUrl } from '@/lib/utils';
 
 import ImageViewer from '@/components/ImageViewer';
+import ProxyImage from '@/components/ProxyImage';
 
 interface DetailPanelProps {
   isOpen: boolean;
@@ -373,7 +374,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               title: title,
               intro: cmsData.desc,
               episodesCount: cmsData.episodes?.length,
-              poster: poster ? processImageUrl(poster) : poster,
+              poster: poster,
             };
             setDetailData(data);
             setOriginalDetailData(data);
@@ -393,7 +394,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   title: data.title || title,
                   intro: data.desc || '',
                   episodesCount: data.episodes?.length || cmsData.episodes?.length,
-                  poster: data.poster ? processImageUrl(data.poster) : poster,
+                  poster: data.poster || poster,
                   year: data.year,
                 };
                 setDetailData(detailData);
@@ -423,7 +424,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
             title: data.name_cn || data.name,
             originalTitle: data.name,
             year: data.date ? data.date.substring(0, 4) : undefined,
-            poster: data.images?.large ? processImageUrl(data.images.large) : poster,
+            poster: data.images?.large || poster,
             rating: data.rating
               ? {
                   value: data.rating.score,
@@ -454,7 +455,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
             title: data.title,
             originalTitle: data.original_title,
             year: data.year,
-            poster: (data.pic?.large || data.pic?.normal) ? processImageUrl(data.pic?.large || data.pic?.normal) : poster,
+            poster: data.pic?.large || data.pic?.normal || poster,
             rating: data.rating
               ? {
                   value: data.rating.value,
@@ -873,7 +874,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
         ...prev,
         title: episodesData.name || season?.name || prev.title,
         intro: episodesData.overview || season?.overview || prev.overview,
-        poster: season?.poster_path ? processImageUrl(getTMDBImageUrl(season.poster_path, 'w500')) : prev.poster,
+        poster: season?.poster_path ? getTMDBImageUrl(season.poster_path, 'w500') : prev.poster,
         releaseDate: episodesData.air_date || season?.air_date || prev.releaseDate,
         year: episodesData.air_date?.substring(0, 4) || season?.air_date?.substring(0, 4) || prev.year,
         episodesCount: episodesData.episodes?.length || season?.episode_count || prev.episodesCount,
@@ -1090,11 +1091,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               style={{ height: virtualGalleryLayout.totalHeight, width: virtualGalleryLayout.usedWidth || '100%' }}
             >
               {virtualGalleryLayout.visibleItems.map((image) => {
-                const imageUrl = processImageUrl(
-                  getTMDBImageUrl(image.file_path, image.imageType === 'poster' ? 'w500' : 'original')
+                const imageUrl = getTMDBImageUrl(
+                  image.file_path,
+                  image.imageType === 'poster' ? 'w500' : 'original'
                 );
-                const thumbUrl = processImageUrl(
-                  getTMDBImageUrl(image.file_path, image.imageType === 'poster' ? 'w342' : 'w780')
+                const thumbUrl = getTMDBImageUrl(
+                  image.file_path,
+                  image.imageType === 'poster' ? 'w342' : 'w780'
                 );
 
                 return (
@@ -1112,12 +1115,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       className="relative w-full h-full overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800 cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(imageUrl)}
                     >
-                      <Image
-                        src={thumbUrl}
+                      <ProxyImage
+                        originalSrc={thumbUrl}
                         alt={`${detailData?.title || title}-gallery-${image.index + 1}`}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                        className="object-cover"
+                        className="absolute inset-0 w-full h-full object-cover"
                         draggable={false}
                       />
                       <div className="absolute left-2 top-2 px-2 py-0.5 rounded-full text-xs bg-black/60 text-white">
@@ -1231,7 +1232,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       className="relative w-32 h-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(detailData.poster!)}
                     >
-                      <Image src={detailData.poster} alt={detailData.title} fill className="object-cover" draggable={false} />
+                      <ProxyImage
+                        originalSrc={detailData.poster}
+                        alt={detailData.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        draggable={false}
+                      />
                     </div>
                     {galleryEntryButton}
                   </div>
@@ -1356,13 +1362,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                             {actor.profile_path ? (
                               <div
                                 className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => handleImageClick(processImageUrl(getTMDBImageUrl(actor.profile_path || null, 'w185')))}
+                                onClick={() => handleImageClick(getTMDBImageUrl(actor.profile_path || null, 'w185'))}
                               >
-                                <Image
-                                  src={processImageUrl(getTMDBImageUrl(actor.profile_path || null, 'w185'))}
+                                <ProxyImage
+                                  originalSrc={getTMDBImageUrl(actor.profile_path || null, 'w185')}
                                   alt={actor.name}
-                                  fill
-                                  className="object-cover"
+                                  className="absolute inset-0 w-full h-full object-cover"
                                   draggable={false}
                                 />
                               </div>
@@ -1474,14 +1479,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                     className="relative w-12 h-16 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 hover:opacity-80 transition-opacity"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleImageClick(processImageUrl(getTMDBImageUrl(season.poster_path, 'w500')));
+                                      handleImageClick(getTMDBImageUrl(season.poster_path, 'w500'));
                                     }}
                                   >
-                                    <Image
-                                      src={processImageUrl(getTMDBImageUrl(season.poster_path, 'w92'))}
+                                    <ProxyImage
+                                      originalSrc={getTMDBImageUrl(season.poster_path, 'w92')}
                                       alt={season.name}
-                                      fill
-                                      className="object-cover"
+                                      className="absolute inset-0 w-full h-full object-cover"
                                       draggable={false}
                                     />
                                   </div>
@@ -1536,13 +1540,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                     {episode.still_path && (
                                       <div
                                         className="relative w-full h-36 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 mb-2 cursor-pointer hover:opacity-90 transition-opacity"
-                                        onClick={() => handleImageClick(processImageUrl(getTMDBImageUrl(episode.still_path, 'w500')))}
+                                        onClick={() => handleImageClick(getTMDBImageUrl(episode.still_path, 'w500'))}
                                       >
-                                        <Image
-                                          src={processImageUrl(getTMDBImageUrl(episode.still_path, 'w300'))}
+                                        <ProxyImage
+                                          originalSrc={getTMDBImageUrl(episode.still_path, 'w300')}
                                           alt={episode.name}
-                                          fill
-                                          className="object-cover"
+                                          className="absolute inset-0 w-full h-full object-cover"
                                           draggable={false}
                                         />
                                       </div>
@@ -1742,7 +1745,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                       className="relative w-32 h-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => handleImageClick(detailData.poster!)}
                     >
-                      <Image src={detailData.poster} alt={detailData.title} fill className="object-cover" draggable={false} />
+                      <ProxyImage
+                        originalSrc={detailData.poster}
+                        alt={detailData.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        draggable={false}
+                      />
                     </div>
                     {galleryEntryButton}
                   </div>
@@ -1867,13 +1875,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                             {actor.profile_path ? (
                               <div
                                 className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => handleImageClick(processImageUrl(getTMDBImageUrl(actor.profile_path || null, 'w185')))}
+                                onClick={() => handleImageClick(getTMDBImageUrl(actor.profile_path || null, 'w185'))}
                               >
-                                <Image
-                                  src={processImageUrl(getTMDBImageUrl(actor.profile_path || null, 'w185'))}
+                                <ProxyImage
+                                  originalSrc={getTMDBImageUrl(actor.profile_path || null, 'w185')}
                                   alt={actor.name}
-                                  fill
-                                  className="object-cover"
+                                  className="absolute inset-0 w-full h-full object-cover"
                                   draggable={false}
                                 />
                               </div>
@@ -1985,14 +1992,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                     className="relative w-12 h-16 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 hover:opacity-80 transition-opacity"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleImageClick(processImageUrl(getTMDBImageUrl(season.poster_path, 'w500')));
+                                      handleImageClick(getTMDBImageUrl(season.poster_path, 'w500'));
                                     }}
                                   >
-                                    <Image
-                                      src={processImageUrl(getTMDBImageUrl(season.poster_path, 'w92'))}
+                                    <ProxyImage
+                                      originalSrc={getTMDBImageUrl(season.poster_path, 'w92')}
                                       alt={season.name}
-                                      fill
-                                      className="object-cover"
+                                      className="absolute inset-0 w-full h-full object-cover"
                                       draggable={false}
                                     />
                                   </div>
@@ -2047,13 +2053,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                     {episode.still_path && (
                                       <div
                                         className="relative w-full h-36 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 mb-2 cursor-pointer hover:opacity-90 transition-opacity"
-                                        onClick={() => handleImageClick(processImageUrl(getTMDBImageUrl(episode.still_path, 'w500')))}
+                                        onClick={() => handleImageClick(getTMDBImageUrl(episode.still_path, 'w500'))}
                                       >
-                                        <Image
-                                          src={processImageUrl(getTMDBImageUrl(episode.still_path, 'w300'))}
+                                        <ProxyImage
+                                          originalSrc={getTMDBImageUrl(episode.still_path, 'w300')}
                                           alt={episode.name}
-                                          fill
-                                          className="object-cover"
+                                          className="absolute inset-0 w-full h-full object-cover"
                                           draggable={false}
                                         />
                                       </div>
